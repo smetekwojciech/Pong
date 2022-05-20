@@ -16,7 +16,12 @@ def draw_scoreboard(points_p1,points_p2,window):
     window.blit(board,(350,725))
     pygame.display.flip()
     return board
-    
+def draw_end_game_screen(window,player):
+    pygame.draw.rect(window,(0,0,0),(0,0,1024,768))
+    font = pygame.font.SysFont(None, 80)
+    board = font.render((str(player)+" WON! GAME OVER"),True, (0,200,111))
+    window.blit(board,(100,380))
+    pygame.display.flip()
 
 class Ball:
     def __init__(self,xpos,ypos,r,window,velocity):
@@ -51,6 +56,7 @@ class Paddle:
         self.width=width
         self.height=height
         self.points=0
+        self.winner=False
         pygame.draw.rect(window,(255,255,255),(xpos,ypos,width,height))
         pygame.display.update()
     def move_paddle(self,x_move,y_move,window):
@@ -60,7 +66,6 @@ class Paddle:
         pygame.draw.rect(window,(0,0,0),(0,719,40,60))
         pygame.draw.rect(window,(0,0,0),(984,719,40,60))
         pygame.display.update()
-
     def hit_paddle(self,ball : Ball,paddle_number):
         if paddle_number==1:
             r=-ball.r
@@ -76,6 +81,10 @@ class Paddle:
         return self.points
     def give_point(self):
         self.points+=1
+    def check_victory(self):
+        if self.points==3:
+            self.winner=True
+
 
 game_window=create_game_window(1024,768)
 run=True
@@ -105,11 +114,7 @@ while(run==True):
         ball.ball_reset(game_window,10)
     scoreboard=draw_scoreboard(paddle1.get_points(),paddle2.get_points(),game_window)
     pygame.draw.line(game_window,(255,255,255),(0,718),(1024,718))
-
-
-
     keys = pygame.key.get_pressed()
-    
     if keys[pygame.K_w] and paddle1.y>0:
         paddle1.move_paddle(0,10,game_window)
     if keys[pygame.K_s] and paddle1.y<688:
@@ -118,4 +123,17 @@ while(run==True):
         paddle2.move_paddle(0,10,game_window)
     if keys[pygame.K_DOWN] and paddle2.y<688:
         paddle2.move_paddle(0,-10,game_window)
-    
+    paddle1.check_victory()
+    paddle2.check_victory()
+    if(paddle1.winner==True or paddle2.winner==True):
+        run=False
+
+end=True
+while(end==True):
+    if(paddle1.winner==True):
+        draw_end_game_screen(game_window,"Player 1")
+    elif(paddle2.winner==True):
+        draw_end_game_screen(game_window,"Player 2")
+    for event in pygame.event.get():
+        if event.type==pygame.QUIT:
+            end=False
